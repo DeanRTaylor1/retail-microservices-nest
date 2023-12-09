@@ -1,3 +1,4 @@
+import { Pagination } from '@deanrtaylor/getpagination-nestjs';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -23,7 +24,7 @@ export class UsersService implements OnModuleInit {
     return 'This action adds a new user';
   }
 
-  findAll({ skip, limit }) {
+  findAll({ skip, limit }: Partial<Pagination>) {
     return this.userRepository.find({ skip, take: limit });
   }
 
