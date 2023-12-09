@@ -19,7 +19,6 @@ export class UsersController {
 
   @MessagePattern(UsersMessage.Find_All_Users)
   findAll(@Payload() { skip, limit }: Pagination) {
-    console.log({ skip, limit });
     return this.usersService.findAll({ skip, limit });
   }
 

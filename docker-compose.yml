@@ -18,6 +18,33 @@ services:
     image: nats
     ports:
       - 4222:4222
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - '9200:9200'
+      - '9300:9300'
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.1
+    ports:
+      - '127.0.0.1:12201:12201/udp'
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.1
+    ports:
+      - '5601:5601'
+    depends_on:
+      - elasticsearch
 
   api-gateway:
     build:
@@ -34,9 +61,16 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      logstash:
+        condition: service_started
     volumes:
       - ./:/app
-      # - mono-node-modules:/app/node_modules
+    logging:
+      driver: gelf
+      options:
+        tag: 'users-service'
+        gelf-address: 'udp://127.0.0.1:12201'
+
   users-service:
     build:
       context: .
@@ -50,36 +84,16 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      logstash:
+        condition: service_started
     volumes:
       - ./:/app
       # - mono-node-modules:/app/node_modules
-
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
-    environment:
-      - discovery.type=single-node
-    ports:
-      - '9200:9200'
-      - '9300:9300'
-    volumes:
-      - elasticsearch-data:/usr/share/elasticsearch/data
-
-  logstash:
-    image: docker.elastic.co/logstash/logstash:7.10.0
-    ports:
-      - '5001:5000'
-    volumes:
-      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
-      - ./logstash/pipeline:/usr/share/logstash/pipeline
-    depends_on:
-      - elasticsearch
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:7.10.0
-    ports:
-      - '5601:5601'
-    depends_on:
-      - elasticsearch
+    logging:
+      driver: gelf
+      options:
+        tag: 'users-service'
+        gelf-address: 'udp://127.0.0.1:12201'
 
 volumes:
   mono-node-modules: null

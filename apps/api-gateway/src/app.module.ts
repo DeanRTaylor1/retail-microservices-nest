@@ -2,11 +2,16 @@ import { join } from 'path';
 
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { LoggerModule } from 'nestjs-pino';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AllExceptionsFilter } from './filters/exceptions.filter';
+import { ResponsesInterceptor } from './interceptors/responses.interceptor';
+import { RouteLoggerInterceptor } from './interceptors/route-logger.interceptor';
 import { AuthService } from './users/auth.service';
 import { UsersController } from './users/users.controller';
 
@@ -42,8 +47,24 @@ import { UsersController } from './users/users.controller';
       }),
       inject: [ConfigService],
     }),
+    LoggerModule.forRoot(),
   ],
   controllers: [AppController, UsersController],
-  providers: [AppService, AuthService],
+  providers: [
+    AppService,
+    AuthService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: RouteLoggerInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponsesInterceptor,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
+  ],
 })
 export class AppModule {}
