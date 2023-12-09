@@ -36,7 +36,7 @@ services:
         condition: service_healthy
     volumes:
       - ./:/app
-      - mono-node-modules:/app/node_modules
+      # - mono-node-modules:/app/node_modules
   users-service:
     build:
       context: .
@@ -52,7 +52,7 @@ services:
         condition: service_healthy
     volumes:
       - ./:/app
-      - mono-node-modules:/app/node_modules
+      # - mono-node-modules:/app/node_modules
 
 volumes:
-  mono-node-modules:
+  mono-node-modules: null

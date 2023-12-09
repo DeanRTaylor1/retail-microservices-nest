@@ -1,34 +1,42 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateUserDto, UsersMessage } from '@app/common';
+import { GetPagination, Pagination } from '@deanrtaylor/getpagination-nestjs';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Post,
+  UseInterceptors,
+} from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
+import { lastValueFrom } from 'rxjs';
+
+import { HashPasswordPipe } from './interceptors/hash-password.interceptor';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
-
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
-  }
+  constructor(@Inject('USERS_NATS_SERVICE') private natsClient: ClientProxy) {}
 
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  async getUsers(@GetPagination() { skip, limit }: Pagination) {
+    const response = this.natsClient.send(UsersMessage.Find_All_Users, {
+      skip,
+      limit,
+    });
+    const data = await lastValueFrom(response);
+    return data;
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
-  }
+  @UseInterceptors(HashPasswordPipe)
+  @Post()
+  async createUser(@Body() createUserDto: CreateUserDto) {
+    console.log(createUserDto);
+    const response = this.natsClient.send(
+      UsersMessage.Create_User,
+      createUserDto,
+    );
+    const data = await lastValueFrom(response);
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+    return data;
   }
 }
