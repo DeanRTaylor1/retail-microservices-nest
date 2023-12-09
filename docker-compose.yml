@@ -1,0 +1,58 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=dev_db
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U root -d dev_db']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - '5432:5432'
+  nats:
+    image: nats
+    ports:
+      - 4222:4222
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - APP_NAME=api-gateway
+    ports:
+      - '3000:3000'
+    command: yarn start:dev api-gateway
+    environment:
+      - NODE_ENV=development
+      - DB_SOURCE=postgresql://root:secret@postgres:5432/dev_db?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./:/app
+      - mono-node-modules:/app/node_modules
+  users-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - APP_NAME=users
+    command: yarn start:dev users
+    environment:
+      - NODE_ENV=development
+      - DB_SOURCE=postgresql://root:secret@postgres:5432/dev_db?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./:/app
+      - mono-node-modules:/app/node_modules
+
+volumes:
+  mono-node-modules:
