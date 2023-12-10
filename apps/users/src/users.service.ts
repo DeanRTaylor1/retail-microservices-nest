@@ -1,5 +1,6 @@
+import { CreateUserDto } from '@app/common';
 import { Pagination } from '@deanrtaylor/getpagination-nestjs';
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -7,21 +8,22 @@ import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService implements OnModuleInit {
+  private logger = new Logger(UsersService.name);
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
   ) {}
 
   async onModuleInit() {
-    console.log('Creating users');
     for (let i = 0; i < 100; i++) {
       const user = User.createRandomUser();
       await this.userRepository.save(user);
     }
-    console.log('done');
   }
 
-  create() {
-    return 'This action adds a new user';
+  async create(createUserDto: CreateUserDto) {
+    const user = this.userRepository.create(createUserDto);
+
+    return this.userRepository.save(user);
   }
 
   findAll({ skip, limit }: Partial<Pagination>) {
@@ -29,7 +31,7 @@ export class UsersService implements OnModuleInit {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} user`;
+    return this.userRepository.findOneBy({ id });
   }
 
   update(id: number) {

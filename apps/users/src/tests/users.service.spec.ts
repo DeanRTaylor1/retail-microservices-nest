@@ -11,7 +11,7 @@ describe('UsersService', () => {
 
   beforeEach(async () => {
     mockUserRepository = {
-      find: jest.fn(),
+      find: jest.fn().mockReturnValue(Array.from({ length: 10 }, (i, _v) => i)),
       findOne: jest.fn(),
       save: jest.fn(),
     };
@@ -33,8 +33,8 @@ describe('UsersService', () => {
     expect(service).toBeDefined();
   });
 
-  it('Should call usersRepository', async () => {
-    const pagination: Partial<Pagination> = { skip: 0, limit: 10 };
+  it('#findAll should call usersRepository', async () => {
+    const pagination: Partial<Pagination> = { skip: 0, limit: 20 };
 
     await service.findAll(pagination);
 
@@ -43,5 +43,22 @@ describe('UsersService', () => {
       skip: pagination.skip,
       take: pagination.limit,
     });
+  });
+
+  it('#findAll should return an array', async () => {
+    const pagination: Partial<Pagination> = { skip: 0, limit: 10 };
+
+    const users = await service.findAll(pagination);
+
+    expect(users.length).toBeGreaterThan(1);
+  });
+
+  it('#findAll should paginate results', async () => {
+    const limit = 10;
+    const pagination: Partial<Pagination> = { skip: 0, limit };
+
+    const users = await service.findAll(pagination);
+
+    expect(users.length).toBe(limit);
   });
 });

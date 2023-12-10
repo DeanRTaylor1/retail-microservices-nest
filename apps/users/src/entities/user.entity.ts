@@ -10,7 +10,7 @@ import {
 
 @Entity({ name: 'users', synchronize: true })
 export class User {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('increment')
   id: number;
 
   @Column({ length: 100 })

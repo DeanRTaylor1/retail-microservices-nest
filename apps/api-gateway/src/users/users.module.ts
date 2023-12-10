@@ -1,3 +1,4 @@
+import { NatsServiceNames } from '@app/common';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
@@ -13,7 +14,7 @@ import { UsersController } from './users.controller';
     ConfigModule,
     ClientsModule.register([
       {
-        name: 'USERS_NATS_SERVICE',
+        name: NatsServiceNames.Users_Nats_Service,
         transport: Transport.NATS,
         options: {
           servers: ['nats://nats'],

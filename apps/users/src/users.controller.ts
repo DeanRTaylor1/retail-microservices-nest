@@ -1,4 +1,9 @@
-import { CreateUserDto, UpdateUserDto, UsersMessage } from '@app/common';
+import {
+  CreateUserDto,
+  NatsServiceNames,
+  UpdateUserDto,
+  UsersMessage,
+} from '@app/common';
 import { Pagination } from '@deanrtaylor/getpagination-nestjs';
 import { Controller, Inject } from '@nestjs/common';
 import { ClientProxy, MessagePattern, Payload } from '@nestjs/microservices';
@@ -9,12 +14,13 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
-    @Inject('USERS_NATS_SERVICE') private readonly natsClient: ClientProxy,
+    @Inject(NatsServiceNames.Users_Nats_Service)
+    private readonly natsClient: ClientProxy,
   ) {}
 
-  @MessagePattern('createUser')
-  create(@Payload() _createUserDto: CreateUserDto) {
-    return this.usersService.create();
+  @MessagePattern(UsersMessage.Create_User)
+  create(@Payload() createUserDto: CreateUserDto) {
+    return this.usersService.create(createUserDto);
   }
 
   @MessagePattern(UsersMessage.Find_All_Users)
@@ -22,8 +28,8 @@ export class UsersController {
     return this.usersService.findAll({ skip, limit });
   }
 
-  @MessagePattern('findOneUser')
-  findOne(@Payload() id: number) {
+  @MessagePattern(UsersMessage.Find_One_User)
+  findOne(@Payload() { id }: { id: number }) {
     return this.usersService.findOne(id);
   }
 

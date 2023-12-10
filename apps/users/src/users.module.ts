@@ -1,5 +1,6 @@
 import { join } from 'path';
 
+import { NatsServiceNames } from '@app/common';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
@@ -13,7 +14,7 @@ import { UsersService } from './users.service';
   imports: [
     ClientsModule.register([
       {
-        name: 'USERS_NATS_SERVICE',
+        name: NatsServiceNames.Users_Nats_Service,
         transport: Transport.NATS,
         options: {
           servers: ['nats://nats'],

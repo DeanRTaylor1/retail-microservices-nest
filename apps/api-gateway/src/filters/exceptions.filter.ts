@@ -1,5 +1,6 @@
 import {
   ArgumentsHost,
+  BadRequestException,
   Catch,
   ExceptionFilter,
   HttpException,
@@ -12,28 +13,33 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class AllExceptionsFilter implements ExceptionFilter {
   constructor(private readonly configService: ConfigService) {}
+
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
     const request = ctx.getRequest();
 
-    const status =
-      exception instanceof HttpException
-        ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
-    const message =
-      exception instanceof HttpException
-        ? exception.getResponse()
-        : 'Something went wrong';
+    let status = HttpStatus.INTERNAL_SERVER_ERROR;
+    let message: string | object = 'Something went wrong';
 
-    const simplifiedMessage =
-      typeof message === 'object'
-        ? (message as HttpException).message
-        : message;
+    if (exception instanceof HttpException) {
+      status = exception.getStatus();
+      message = exception.getResponse();
+    }
+
+    if (exception instanceof BadRequestException) {
+      const exceptionResponse = exception.getResponse();
+      if (
+        typeof exceptionResponse === 'object' &&
+        'message' in exceptionResponse
+      ) {
+        message = exceptionResponse['message'] as string;
+      }
+    }
 
     const errorResponse = {
       code: status,
-      message: simplifiedMessage,
+      message: message,
       path: request.url,
       method: request.method,
     };
