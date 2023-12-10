@@ -2520,6 +2520,11 @@ eslint-module-utils@^2.8.0:
   dependencies:
     debug "^3.2.7"
 
+eslint-plugin-better-max-params@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-better-max-params/-/eslint-plugin-better-max-params-0.0.1.tgz#8d188cba3465a17c18c5206098925d1dcf284ddd"
+  integrity sha512-W9od+HV5KpXEGI1A+4ZYGSkceyX50eAGGSandP/TFPUIu781KoOu2Nru8aOE2SbEr+8stmhfsYmpu+iD9vl1NA==
+
 eslint-plugin-import@^2.29.0:
   version "2.29.0"
   resolved "https://registry.yarnpkg.com/eslint-plugin-import/-/eslint-plugin-import-2.29.0.tgz#8133232e4329ee344f2f612885ac3073b0b7e155"

@@ -6,7 +6,10 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
+
+import { UserRole } from './user-roles.entity';
 
 @Entity({ name: 'users', synchronize: true })
 export class User {
@@ -21,6 +24,9 @@ export class User {
 
   @Column({ select: false })
   password: string;
+
+  @OneToMany(() => UserRole, (userRole) => userRole.user, { lazy: true })
+  userRoles: UserRole[];
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
