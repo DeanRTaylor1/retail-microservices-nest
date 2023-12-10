@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { LoggerModule } from 'nestjs-pino';
 
 import { AppController } from './app.controller';
@@ -49,6 +50,7 @@ import { UsersController } from './users/users.controller';
       inject: [ConfigService],
     }),
     LoggerModule.forRoot(),
+    PrometheusModule.register(),
   ],
   controllers: [AppController, UsersController],
   providers: [
