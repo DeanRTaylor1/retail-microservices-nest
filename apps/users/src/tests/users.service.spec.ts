@@ -1,20 +1,37 @@
+import { dataSourceMockFactory } from '@app/common/utils/mock-datasource';
 import { Pagination } from '@deanrtaylor/getpagination-nestjs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
+import { Role } from '../entities/roles.entity';
+import { UserRole } from '../entities/user-roles.entity';
 import { User } from '../entities/user.entity';
 import { UsersService } from '../users.service';
 
 describe('UsersService', () => {
   let service: UsersService;
   let mockUserRepository;
+  let mockUserRolesRepository;
+  let mockRolesRepository;
 
   beforeEach(async () => {
     mockUserRepository = {
-      find: jest.fn().mockReturnValue(Array.from({ length: 10 }, (i, _v) => i)),
+      createQueryBuilder: jest.fn(() => ({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        leftJoin: jest.fn().mockReturnThis(),
+        addSelect: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getMany: jest
+          .fn()
+          .mockResolvedValue(Array.from({ length: 10 }, (i, _v) => i)),
+      })),
       findOne: jest.fn(),
       save: jest.fn(),
     };
+    mockUserRolesRepository = {};
+    mockRolesRepository = {};
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -22,6 +39,18 @@ describe('UsersService', () => {
         {
           provide: getRepositoryToken(User),
           useValue: mockUserRepository,
+        },
+        {
+          provide: getRepositoryToken(UserRole),
+          useValue: mockUserRolesRepository,
+        },
+        {
+          provide: getRepositoryToken(Role),
+          useValue: mockRolesRepository,
+        },
+        {
+          provide: DataSource,
+          useFactory: dataSourceMockFactory,
         },
       ],
     }).compile();
@@ -38,11 +67,7 @@ describe('UsersService', () => {
 
     await service.findAll(pagination);
 
-    expect(mockUserRepository.find).toHaveBeenCalled();
-    expect(mockUserRepository.find).toHaveBeenCalledWith({
-      skip: pagination.skip,
-      take: pagination.limit,
-    });
+    expect(mockUserRepository.createQueryBuilder).toHaveBeenCalled();
   });
 
   it('#findAll should return an array', async () => {
