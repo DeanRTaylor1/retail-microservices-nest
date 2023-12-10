@@ -1,73 +1,77 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Retail Microservices Architecture
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Introduction
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+This repository holds the infrastructure and service code for a retail microservices application, which is structured to demonstrate a scalable and distributed system akin to large-scale e-commerce platforms.
 
-## Description
+![Infrastructure Diagram](./microservices-retail.png)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Architecture Overview
 
-## Installation
+The architecture is designed to be scalable, resilient, and secure, following best practices for cloud-native applications.
 
-```bash
-$ yarn install
-```
+### Traffic Flow and Security
 
-## Running the app
+1. **AWS Route 53**:
 
-```bash
-# development
-$ yarn run start
+   - Serves as the DNS service routing domain traffic to the appropriate resources.
+   - Includes health checks to ensure traffic is only routed to healthy endpoints.
 
-# watch mode
-$ yarn run start:dev
+2. **AWS WAF and Shield**:
 
-# production mode
-$ yarn run start:prod
-```
+   - **AWS WAF** is applied at the edge of the network, protecting the entry points such as the Application Load Balancer or Amazon API Gateway against common web exploits.
+   - **AWS Shield** provides DDoS protection to safeguard the application from network and transport layer attacks.
 
-## Test
+3. **Nginx Load Balancer**:
 
-```bash
-# unit tests
-$ yarn run test
+   - Distributes incoming traffic across Kubernetes pods.
+   - Can act as an SSL termination point, managing secure connections from clients.
 
-# e2e tests
-$ yarn run test:e2e
+4. **Kubernetes Cluster**:
 
-# test coverage
-$ yarn run test:cov
-```
+   - Hosts and orchestrates all the microservices, handling deployment, scaling, and management.
 
-## Support
+5. **Microservices**:
+   - **API Gateway**: Central entry point for all client HTTP requests, directing them to the appropriate services.
+   - **Search Service**: Manages search operations within the platform.
+   - **Products Service**: Maintains product listings and inventory.
+   - **Orders Service**: Oversees the order lifecycle.
+   - **Payments Service**: Processes financial transactions securely.
+   - **Users/Auth Service**: Manages user authentication and profile data.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### Telemetry and Logging
 
-## Stay in touch
+- **Prometheus and Grafana**:
+  - Prometheus collects and stores metrics, running on port `9090`.
+  - Grafana, accessible on port `3002`, is used to visualize the metrics collected by Prometheus.
+- **Logging**:
+  - **Pino**: Integrated with NestJS for structured logging.
+  - **GELF**: Transmits `stdout`/`stderr` output to Logstash.
+  - **Logstash**: Processes logs and forwards them to Elasticsearch.
+  - **Elasticsearch and Kibana**:
+    - Elasticsearch indexes and stores logs.
+    - Kibana, on the standard port, provides a user interface for log query and visualization.
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Database Schema
+
+For local development, a single PostgreSQL instance is used to store data for all services. In a production environment, it is recommended to split databases per service for isolation and scalability.
+
+## Local Setup
+
+Instructions for local setup will be provided to run each service individually, along with steps to set up the entire ecosystem using Docker Compose or a local Kubernetes cluster.
+
+## Project Status
+
+The application is in the development stage and not yet ready for production deployment. Current configurations are optimized for local development and learning purposes.
+
+## Security Measures
+
+Security is a cornerstone of the architecture, with AWS WAF and Shield providing a strong defense against web attacks and DDoS. Internally, Kubernetes network policies, pod security policies, and TLS/SSL are used to ensure secure operations within the cluster.
+
+## Contributing
+
+We welcome contributions to this project. Please follow the project's code of conduct and submit pull requests for consideration.
 
 ## License
 
-Nest is [MIT licensed](LICENSE).
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
