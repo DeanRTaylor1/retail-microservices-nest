@@ -3,7 +3,8 @@ import { join } from 'path';
 import { NatsServiceNames } from '@app/common';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { JwtModule } from '@nestjs/jwt';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
@@ -12,9 +13,11 @@ import { LoggerModule } from 'nestjs-pino';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AllExceptionsFilter } from './filters/exceptions.filter';
+import { AuthGuard } from './guards/auth.guard';
 import { ResponsesInterceptor } from './interceptors/responses.interceptor';
 import { RouteLoggerInterceptor } from './interceptors/route-logger.interceptor';
 import { AuthService } from './users/auth.service';
+import { SessionsController } from './users/sessions.controller';
 import { UsersController } from './users/users.controller';
 
 @Module({
@@ -51,8 +54,19 @@ import { UsersController } from './users/users.controller';
     }),
     LoggerModule.forRoot(),
     PrometheusModule.register(),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
+        return {
+          global: true,
+          secret: configService.get('JWT_SECRET', 'secret'),
+          signOptions: { expiresIn: configService.get('JWT_EXPIRES', '24h') },
+        };
+      },
+      inject: [ConfigService],
+    }),
   ],
-  controllers: [AppController, UsersController],
+  controllers: [AppController, UsersController, SessionsController],
   providers: [
     AppService,
     AuthService,
@@ -67,6 +81,10 @@ import { UsersController } from './users/users.controller';
     {
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
     },
   ],
 })

@@ -13,6 +13,6 @@ async function bootstrap() {
       },
     },
   );
-  await app.listen();
+  await app.listen().then(() => console.log('User Service initialised'));
 }
 bootstrap();
