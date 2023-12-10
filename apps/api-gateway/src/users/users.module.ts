@@ -7,6 +7,7 @@ import { AppController } from '../app.controller';
 import { AppService } from '../app.service';
 
 import { AuthService } from './auth.service';
+import { SessionsController } from './sessions.controller';
 import { UsersController } from './users.controller';
 
 @Module({
@@ -23,8 +24,8 @@ import { UsersController } from './users.controller';
       },
     ]),
   ],
-  controllers: [AppController, UsersController],
+  controllers: [AppController, UsersController, SessionsController],
   providers: [AppService, AuthService],
-  exports: [UsersController, AuthService],
+  exports: [UsersController, AuthService, SessionsController],
 })
 export class AppModule {}

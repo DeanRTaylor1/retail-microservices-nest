@@ -25,7 +25,7 @@ export class User {
   @Column({ select: false })
   password: string;
 
-  @OneToMany(() => UserRole, (userRole) => userRole.user, { lazy: true })
+  @OneToMany(() => UserRole, (userRole) => userRole.user)
   userRoles: UserRole[];
 
   @CreateDateColumn({ type: 'timestamp' })

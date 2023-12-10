@@ -1,9 +1,4 @@
-import {
-  CreateUserDto,
-  NatsServiceNames,
-  UpdateUserDto,
-  UsersMessage,
-} from '@app/common';
+import { CreateUserDto, NatsServiceNames, UsersMessage } from '@app/common';
 import { Pagination } from '@deanrtaylor/getpagination-nestjs';
 import { Controller, Inject } from '@nestjs/common';
 import { ClientProxy, MessagePattern, Payload } from '@nestjs/microservices';
@@ -19,8 +14,10 @@ export class UsersController {
   ) {}
 
   @MessagePattern(UsersMessage.Create_User)
-  create(@Payload() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  async create(@Payload() createUserDto: CreateUserDto) {
+    const user = await this.usersService.create(createUserDto);
+
+    return this.usersService.convertToUserDTO(user);
   }
 
   @MessagePattern(UsersMessage.Find_All_Users)
@@ -33,13 +30,10 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
-  @MessagePattern('updateUser')
-  update(@Payload() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(updateUserDto.id);
-  }
+  @MessagePattern(UsersMessage.Find_By_Email)
+  async findByEmail(@Payload() { email }: { email: string }) {
+    const user = await this.usersService.findByEmailForAuth(email);
 
-  @MessagePattern('removeUser')
-  remove(@Payload() id: number) {
-    return this.usersService.remove(id);
+    return this.usersService.convertToUserDTO(user, true);
   }
 }

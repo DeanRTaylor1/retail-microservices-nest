@@ -1,12 +1,17 @@
 import { scrypt, createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 import { promisify } from 'util';
 
+import { UserRoleDTO } from '@app/common';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private jwtService: JwtService,
+  ) {}
 
   public async encrypt(password: string): Promise<string> {
     const secret = this.configService.get<string>('SECRET_KEY');
@@ -21,7 +26,32 @@ export class AuthService {
     return `${iv.toString('hex')}:${encryptedText.toString('base64')}`;
   }
 
-  public async decrypt(encrypted: string): Promise<string> {
+  public async compare({
+    storedPassword,
+    suppliedPassword,
+  }: {
+    storedPassword: string;
+    suppliedPassword: string;
+  }): Promise<boolean> {
+    return suppliedPassword === (await this.decrypt(storedPassword));
+  }
+
+  public async signIn({
+    userId,
+    email,
+    userRoles,
+  }: {
+    userId: number;
+    email: string;
+    userRoles: Array<Partial<UserRoleDTO>>;
+  }): Promise<{ accessToken: string }> {
+    const payload = { sub: userId, email, userRoles };
+    return {
+      accessToken: await this.jwtService.signAsync(payload),
+    };
+  }
+
+  private async decrypt(encrypted: string): Promise<string> {
     const [ivHex, encryptedData] = encrypted.split(':');
     const iv = Buffer.from(ivHex, 'hex');
     const secret = this.configService.get<string>('SECRET_KEY');
