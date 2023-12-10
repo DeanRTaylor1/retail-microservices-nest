@@ -1,0 +1,50 @@
+name: Node.js CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache Yarn dependencies
+        uses: actions/cache@v3
+        with:
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run tests
+        run: yarn test
+        env:
+          NODE_ENV: test
+          LOG_DIR: logs/
+          LOG_FORMAT: dev
+          LOG_LEVEL: debug
+          PORT: 3000
+          JWT_SECRET: SECRET
+          JWT_EXPIRES: 12h
+          CACHE_TYPE: 'memory'
+          REDIS_HOST:
+          REDIS_PORT:
+          REDIS_PASSWORD:
+          REDIS_USERNAME:
+          API_URL: localhost:3000
