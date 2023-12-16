@@ -43,12 +43,15 @@ import { UsersController } from './users/users.controller';
       useFactory: async (configService: ConfigService) => ({
         type: 'postgres',
         host: configService.get<string>('DB_HOST', 'postgres'),
-        port: configService.get<number>('Db_PORT', 5432),
-        username: configService.get<string>('DB_PORT', 'root'),
-        password: configService.get<string>('DB_PORT', 'secret'),
+        port: configService.get<number>('DB_PORT', 5432),
+        username: configService.get<string>('DB_USER', 'root'),
+        password: configService.get<string>('DB_PASSWORD', 'secret'),
         database: configService.get<string>('DB_NAME', 'dev_db'),
         entities: [],
-        synchronize: configService.get<boolean>('DATABASE_SYNCHRONIZE', true),
+        synchronize: false,
+        logging:
+          configService.get<string>('NODE_ENV', 'development') ===
+          'development',
       }),
       inject: [ConfigService],
     }),

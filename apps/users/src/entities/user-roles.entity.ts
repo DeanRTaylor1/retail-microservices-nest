@@ -3,7 +3,7 @@ import { Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 import { Role } from './roles.entity';
 import { User } from './user.entity';
 
-@Entity({ name: 'user_roles', synchronize: true })
+@Entity({ name: 'users_user_roles', synchronize: true })
 export class UserRole {
   @PrimaryGeneratedColumn()
   id: number;

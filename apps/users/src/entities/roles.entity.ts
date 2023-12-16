@@ -3,7 +3,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 
 import { UserRole } from './user-roles.entity';
 
-@Entity({ name: 'roles', synchronize: true })
+@Entity({ name: 'users_roles', synchronize: true })
 export class Role {
   @PrimaryGeneratedColumn()
   id: number;
