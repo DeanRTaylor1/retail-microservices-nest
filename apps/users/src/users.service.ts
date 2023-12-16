@@ -46,7 +46,7 @@ export class UsersService {
     }
   }
 
-  findAll({ skip, limit }: Pagination): Promise<Array<User>> {
+  findAll({ skip, limit }: Partial<Pagination>): Promise<Array<User>> {
     return this.usersRepository.findAll({ skip, limit });
   }
 

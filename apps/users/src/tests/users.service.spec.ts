@@ -7,6 +7,9 @@ import { DataSource } from 'typeorm';
 import { Role } from '../entities/roles.entity';
 import { UserRole } from '../entities/user-roles.entity';
 import { User } from '../entities/user.entity';
+import { RolesRepository } from '../repositories/roles.repository';
+import { UserRolesRepository } from '../repositories/user-roles.repository';
+import { UsersRepository } from '../repositories/users.repository';
 import { UsersService } from '../users.service';
 
 describe('UsersService', () => {
@@ -36,6 +39,9 @@ describe('UsersService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
+        UsersRepository,
+        RolesRepository,
+        UserRolesRepository,
         {
           provide: getRepositoryToken(User),
           useValue: mockUserRepository,
