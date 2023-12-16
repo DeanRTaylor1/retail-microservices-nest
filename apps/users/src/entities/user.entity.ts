@@ -11,7 +11,7 @@ import {
 
 import { UserRole } from './user-roles.entity';
 
-@Entity({ name: 'users', synchronize: true })
+@Entity({ name: 'users_users', synchronize: true })
 export class User {
   @PrimaryGeneratedColumn('increment')
   id: number;

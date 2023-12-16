@@ -9,6 +9,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Role } from './entities/roles.entity';
 import { UserRole } from './entities/user-roles.entity';
 import { User } from './entities/user.entity';
+import { RolesRepository } from './repositories/roles.repository';
+import { UserRolesRepository } from './repositories/user-roles.repository';
+import { UsersRepository } from './repositories/users.repository';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 
@@ -35,18 +38,26 @@ import { UsersService } from './users.service';
       useFactory: async (configService: ConfigService) => ({
         type: 'postgres',
         host: configService.get<string>('DB_HOST', 'postgres'),
-        port: configService.get<number>('Db_PORT', 5432),
-        username: configService.get<string>('DB_PORT', 'root'),
+        port: configService.get<number>('DB_PORT', 5432),
+        username: configService.get<string>('DB_USER', 'root'),
         password: configService.get<string>('DB_PASSWORD', 'secret'),
         database: configService.get<string>('DB_NAME', 'dev_db'),
-        entities: [User, UserRole, Role],
-        synchronize: configService.get<boolean>('DATABASE_SYNCHRONIZE', true),
+        entities: [User, Role, UserRole],
+        synchronize: false,
+        logging:
+          configService.get<string>('NODE_ENV', 'development') ===
+          'development',
       }),
       inject: [ConfigService],
     }),
     TypeOrmModule.forFeature([UserRole, Role, User]),
   ],
   controllers: [UsersController],
-  providers: [UsersService],
+  providers: [
+    UsersService,
+    UsersRepository,
+    RolesRepository,
+    UserRolesRepository,
+  ],
 })
 export class UsersModule {}
